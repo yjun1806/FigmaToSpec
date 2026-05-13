@@ -32,7 +32,7 @@ export default function App() {
   const [state, setState] = useState<AppState>({
     code: "",
     selectedFramework: "HTML",
-    isLoading: false,
+    isLoading: true,
     htmlPreview: emptyPreview,
     settings: null,
     colors: [],
@@ -69,7 +69,7 @@ export default function App() {
           }));
           break;
 
-        case "pluginSettingChanged":
+        case "pluginSettingsChanged":
           const settingsMessage = untypedMessage as SettingsChangedMessage;
           setState((prevState) => ({
             ...prevState,
@@ -115,6 +115,10 @@ export default function App() {
     return () => {
       window.onmessage = null;
     };
+  }, []);
+
+  useEffect(() => {
+    parent.postMessage({ pluginMessage: { type: "ui-ready" } }, "*");
   }, []);
 
   const handleFrameworkChange = (updatedFramework: Framework) => {

@@ -10,6 +10,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { cn, replaceExternalImagesWithCanvas } from "../lib/utils";
+import { Button } from "./ui/button";
 
 // Update the component props to receive state from parent
 const Preview: React.FC<{
@@ -62,14 +63,16 @@ const Preview: React.FC<{
         <div className="flex items-center gap-1">
           {/* Background Color Toggle - Only show in desktop and mobile modes */}
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setBgColor(bgColor === "white" ? "black" : "white")}
-            className="p-1.5 mr-1 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
+            className="mr-1 rounded-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700"
             aria-label={`Switch the preview to ${bgColor === "white" ? "black" : "white"} background.\nUseful to avoid black text on black background.`}
             title={`Switch the preview to ${bgColor === "white" ? "black" : "white"} background.\nUseful to avoid black text on black background.`}
           >
             <Circle size={14} fill={bgColor} className="stroke-current" />
-          </button>
+          </Button>
 
           {/* View Mode Toggle */}
           {/* <div className="mr-1 flex bg-neutral-100 dark:bg-neutral-700 rounded-md p-0.5">
@@ -112,14 +115,16 @@ const Preview: React.FC<{
           </div> */}
 
           {/* Expand/Collapse Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setExpanded(!expanded)}
-            className="p-1 rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
+            className="rounded-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700"
             aria-label={expanded ? "Minimize preview" : "Maximize preview"}
             title={expanded ? "Minimize preview" : "Maximize preview"}
           >
             {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -184,7 +189,9 @@ const Preview: React.FC<{
                     transition: "all 0.3s ease",
                   }}
                   dangerouslySetInnerHTML={{
-                    __html: replaceExternalImagesWithCanvas(htmlPreview.content),
+                    __html: replaceExternalImagesWithCanvas(
+                      htmlPreview.content,
+                    ),
                   }}
                 />
               </div>

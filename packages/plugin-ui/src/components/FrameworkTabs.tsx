@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "./ui/button";
 
 type Option = {
   value: string;
@@ -22,17 +23,19 @@ const FrameworkTabs: React.FC<FrameworkTabsProps> = ({
         {options.map((option) => {
           const isSelected = option.value === selectedValue;
           return (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               key={option.value}
               onClick={() => onChange(option.value)}
-              className={`py-1.5 px-3 rounded-md text-xs font-medium transition-all duration-200 ${
+              className={`h-7 rounded-md px-3 text-xs ${
                 isSelected
-                  ? "bg-blue-500 dark:bg-blue-500 text-primary-foreground shadow-2xs"
-                  : "hover:bg-muted-foreground/10 text-muted-foreground"
+                  ? "bg-blue-500 text-primary-foreground shadow-2xs hover:bg-blue-500 hover:text-primary-foreground dark:bg-blue-500 dark:hover:bg-blue-500"
+                  : "text-muted-foreground hover:bg-muted-foreground/10 hover:text-muted-foreground dark:hover:bg-muted-foreground/10"
               }`}
             >
               {option.label}
-            </button>
+            </Button>
           );
         })}
       </div>

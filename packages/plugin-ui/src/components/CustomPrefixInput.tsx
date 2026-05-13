@@ -251,9 +251,7 @@ const FormField = React.memo(
               >
                 <HelpCircle className="w-3 h-3 text-gray-400" />
               </TooltipTrigger>
-              <TooltipContent className="w-56 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 shadow-lg">
-                {helpText}
-              </TooltipContent>
+              <TooltipContent>{helpText}</TooltipContent>
             </Tooltip>
           )}
 

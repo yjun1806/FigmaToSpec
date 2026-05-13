@@ -134,7 +134,14 @@ const safeRun = async (settings: PluginSettings) => {
 const standardMode = async () => {
   console.log("[DEBUG] standardMode - Starting standard mode initialization");
   figma.showUI(__html__, { width: 450, height: 700, themeColors: true });
-  await initSettings();
+  let initialized = false;
+  const initializeOnce = async () => {
+    if (initialized) {
+      return;
+    }
+    initialized = true;
+    await initSettings();
+  };
 
   // Listen for selection changes
   figma.on("selectionchange", () => {
@@ -162,7 +169,9 @@ const standardMode = async () => {
       msg?.type ? `type=${msg.type}` : "unknown type",
     );
 
-    if (msg.type === "pluginSettingWillChange") {
+    if (msg.type === "ui-ready") {
+      await initializeOnce();
+    } else if (msg.type === "pluginSettingWillChange") {
       const { key, value } = msg as SettingWillChangeMessage<unknown>;
       console.log(`[DEBUG] Setting changed: ${key} = ${value}`);
       (userPluginSettings as any)[key] = value;

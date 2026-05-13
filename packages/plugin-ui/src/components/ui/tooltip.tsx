@@ -15,8 +15,17 @@ function TooltipProvider({
   );
 }
 
-function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
-  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
+function Tooltip({
+  disableHoverablePopup = true,
+  ...props
+}: TooltipPrimitive.Root.Props) {
+  return (
+    <TooltipPrimitive.Root
+      data-slot="tooltip"
+      disableHoverablePopup={disableHoverablePopup}
+      {...props}
+    />
+  );
 }
 
 function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {

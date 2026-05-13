@@ -18,9 +18,10 @@ import {
   selectPreferenceOptions,
 } from "./codegenPreferenceOptions";
 import Loading from "./components/Loading";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InfoIcon } from "lucide-react";
 import React from "react";
+import { Button } from "./components/ui/button";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { TooltipProvider } from "./components/ui/tooltip";
 
@@ -41,6 +42,7 @@ type PluginUIProps = {
 };
 
 const frameworks: Framework[] = ["HTML", "Tailwind", "Flutter", "SwiftUI"];
+const LOADING_INDICATOR_DELAY_MS = 250;
 
 type FrameworkTabsProps = {
   frameworks: Framework[];
@@ -60,12 +62,14 @@ const FrameworkTabs = ({
   return (
     <div className="grid grid-cols-4 sm:grid-cols-2 md:grid-cols-4 gap-1 grow">
       {frameworks.map((tab) => (
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           key={`tab ${tab}`}
-          className={`w-full h-8 flex items-center justify-center text-sm rounded-md transition-colors font-medium ${
+          className={`w-full h-8 rounded-md text-sm ${
             selectedFramework === tab && !showAbout
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-muted hover:bg-primary/90 hover:text-primary-foreground"
+              ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary"
+              : "bg-muted text-foreground hover:bg-primary/90 hover:text-primary-foreground dark:hover:bg-primary/90"
           }`}
           onClick={() => {
             setSelectedFramework(tab as Framework);
@@ -73,7 +77,7 @@ const FrameworkTabs = ({
           }}
         >
           {tab}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -81,6 +85,8 @@ const FrameworkTabs = ({
 
 export const PluginUI = (props: PluginUIProps) => {
   const [showAbout, setShowAbout] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const [hasHandledInitialLoad, setHasHandledInitialLoad] = useState(false);
 
   const [previewExpanded, setPreviewExpanded] = useState(false);
   const [previewViewMode, setPreviewViewMode] = useState<
@@ -90,7 +96,28 @@ export const PluginUI = (props: PluginUIProps) => {
     "white",
   );
 
-  if (props.isLoading) return <Loading />;
+  useEffect(() => {
+    if (!props.isLoading) {
+      setShowLoading(false);
+      setHasHandledInitialLoad(true);
+      return;
+    }
+
+    if (hasHandledInitialLoad) {
+      setShowLoading(true);
+      return;
+    }
+
+    // On plugin startup, the UI waits for a ready handshake before the first conversion.
+    // Delay the loader only for that initial pass to avoid a one-frame loading flash.
+    const timer = window.setTimeout(() => {
+      setShowLoading(true);
+    }, LOADING_INDICATOR_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [props.isLoading]);
+
+  if (props.isLoading) return showLoading ? <Loading /> : null;
 
   const isEmpty = props.code === "";
   const warnings = props.warnings ?? [];
@@ -107,11 +134,13 @@ export const PluginUI = (props: PluginUIProps) => {
               showAbout={showAbout}
               setShowAbout={setShowAbout}
             />
-            <button
-              className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium ${
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 rounded-md ${
                 showAbout
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted hover:bg-primary/90 hover:text-primary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary"
+                  : "bg-muted text-foreground hover:bg-primary/90 hover:text-primary-foreground dark:hover:bg-primary/90"
               }`}
               onClick={() => {
                 setShowAbout(!showAbout);
@@ -119,7 +148,7 @@ export const PluginUI = (props: PluginUIProps) => {
               aria-label="About"
             >
               <InfoIcon size={16} />
-            </button>
+            </Button>
           </div>
         </div>
         <div

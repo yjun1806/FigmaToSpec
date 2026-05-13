@@ -1,5 +1,6 @@
 import { HelpCircle } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -26,22 +27,16 @@ const SelectableToggle = ({
 
   return (
     <div className="relative inline-block">
-      <div
-        role="button"
-        tabIndex={0}
+      <Button
+        variant="ghost"
+        size="default"
         aria-pressed={isSelected}
         onClick={handleClick}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            handleClick();
-          }
-        }}
         className={cn(
-          "h-8 px-2 flex items-center justify-center rounded-md transition-all duration-200 border cursor-pointer",
+          "duration-200",
           isSelected
             ? `${buttonClass} text-white shadow-2xs border-transparent`
-            : "bg-muted hover:bg-neutral-200 dark:hover:bg-neutral-700 text-muted-foreground border",
+            : "bg-muted text-muted-foreground hover:bg-neutral-200 dark:hover:bg-neutral-700",
         )}
       >
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -70,18 +65,16 @@ const SelectableToggle = ({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <div className="hover:text-foreground transition-opacity cursor-help" />
+                  <span className="inline-flex cursor-help transition-opacity hover:text-foreground" />
                 }
               >
                 <HelpCircle size={12} />
               </TooltipTrigger>
-              <TooltipContent className="w-48 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 shadow-lg">
-                {description}
-              </TooltipContent>
+              <TooltipContent>{description}</TooltipContent>
             </Tooltip>
           )}
         </div>
-      </div>
+      </Button>
     </div>
   );
 };
