@@ -15,7 +15,7 @@ interface SettingsGroupProps {
   selectedSettings?: PluginSettings | null;
   onPreferenceChanged?: (
     key: keyof PluginSettings,
-    value: boolean | string,
+    value: PluginSettings[keyof PluginSettings],
   ) => void;
   children?: ReactNode;
 }

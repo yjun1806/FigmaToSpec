@@ -21,7 +21,7 @@ type AboutProps = {
   useOldPluginVersion?: boolean;
   onPreferenceChanged: (
     key: keyof PluginSettings,
-    value: boolean | string | number,
+    value: PluginSettings[keyof PluginSettings],
   ) => void;
 };
 

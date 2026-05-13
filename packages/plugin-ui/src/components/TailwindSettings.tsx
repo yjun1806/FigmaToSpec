@@ -5,7 +5,7 @@ interface TailwindSettingsProps {
   settings: PluginSettings | null;
   onPreferenceChanged: (
     key: keyof PluginSettings,
-    value: boolean | string | number | Record<string, string[]>,
+    value: PluginSettings[keyof PluginSettings],
   ) => void;
 }
 
@@ -28,22 +28,22 @@ export const TailwindSettings: React.FC<TailwindSettingsProps> = ({
     onPreferenceChanged("baseFontFamily", newValue);
   };
   const handleFontFamilyCustomConfigChange = (newValue: string) => {
-  try {
-    // Check if the string is empty, use default empty object
-    if (!newValue.trim()) {
-      onPreferenceChanged("fontFamilyCustomConfig", {});
-      return;
+    try {
+      // Check if the string is empty, use default empty object
+      if (!newValue.trim()) {
+        onPreferenceChanged("fontFamilyCustomConfig", {});
+        return;
+      }
+
+      // parse the JSON
+      const config = JSON.parse(newValue);
+
+      onPreferenceChanged("fontFamilyCustomConfig", config);
+    } catch (error) {
+      // Handle parsing errors
+      console.error("Invalid JSON configuration:", error);
     }
-
-    // parse the JSON
-    const config = JSON.parse(newValue);
-
-    onPreferenceChanged("fontFamilyCustomConfig", config);
-  } catch (error) {
-    // Handle parsing errors
-    console.error("Invalid JSON configuration:", error);
-  }
-};
+  };
 
   return (
     <div className="mt-2">
@@ -113,7 +113,7 @@ export const TailwindSettings: React.FC<TailwindSettingsProps> = ({
         <div className="mb-3">
           <FormField
             label="Base Font Family"
-            initialValue={settings.baseFontFamily || ''}
+            initialValue={settings.baseFontFamily || ""}
             onValueChange={(d) => {
               handleBaseFontFamilyChange(String(d));
             }}
@@ -129,7 +129,11 @@ export const TailwindSettings: React.FC<TailwindSettingsProps> = ({
           <FormField
             type="json"
             label="Font Family Custom Config"
-            initialValue={settings.fontFamilyCustomConfig ? JSON.stringify(settings.fontFamilyCustomConfig) : ''}
+            initialValue={
+              settings.fontFamilyCustomConfig
+                ? JSON.stringify(settings.fontFamilyCustomConfig)
+                : ""
+            }
             onValueChange={(d) => {
               handleFontFamilyCustomConfigChange(String(d));
             }}
