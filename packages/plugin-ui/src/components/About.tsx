@@ -57,7 +57,7 @@ const About = ({
         <div className="w-16 h-16 bg-linear-to-br from-green-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg mb-3">
           <Code size={32} className="text-white" />
         </div>
-        <h2 className="text-2xl font-bold mb-1">Figma to Code</h2>
+        <h2 className="text-2xl font-bold mb-1">FigmaToSpec</h2>
         <div className="flex items-center gap-1 text-neutral-600 dark:text-neutral-300">
           <span>Created with</span>
           <Heart size={14} className="text-red-500 fill-red-500" />
@@ -114,11 +114,11 @@ const About = ({
               <h3 className="font-semibold text-base">Open Source</h3>
             </div>
             <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3">
-              Figma to Code is completely open-source. Contributions, bug
+              FigmaToSpec is completely open-source. Contributions, bug
               reports, and feature requests are welcome!
             </p>
             <a
-              href="https://github.com/bernaferrari/figmatocode"
+              href="https://github.com/yjun1806/FigmaToSpec"
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
@@ -183,7 +183,7 @@ const About = ({
             </p>
             <div className="space-y-2">
               <a
-                href="https://github.com/bernaferrari/figmato-code/issues"
+                href="https://github.com/yjun1806/FigmaToSpec/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-green-600 dark:text-green-400 hover:underline"

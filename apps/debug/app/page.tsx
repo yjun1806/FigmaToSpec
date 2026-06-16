@@ -16,7 +16,7 @@ export default function Web() {
           Debug Mode
         </h1>
         <p className="text-gray-600 mt-2">
-          Preview your Figma to Code plugin in both light and dark modes
+          Preview your FigmaToSpec plugin in both light and dark modes
         </p>
         <div className="h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 mt-6"></div>
       </header>
@@ -79,6 +79,6 @@ const PluginFigmaToolbar = (props: { variant: string }) => (
       <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
       <div className="w-3 h-3 rounded-full bg-green-500"></div>
     </div>
-    <span className="font-medium ml-2">Figma to Code {props.variant}</span>
+    <span className="font-medium ml-2">FigmaToSpec {props.variant}</span>
   </div>
 );

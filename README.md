@@ -1,19 +1,8 @@
-<!-- <p align="center"><img src="assets/icon_256.png" alt="Figma to Code" height="128px"></p> -->
+# FigmaToSpec
 
-[![Figma to Code](assets/git_preview.png)](https://www.figma.com/community/plugin/842128343887142055)
+> A fork of [bernaferrari/FigmaToCode](https://github.com/bernaferrari/FigmaToCode) that adds an **LLM export mode**: it turns a Figma selection into a token-optimized, framework-agnostic spec — a reusable **Spec Guide** plus a per-component body — for AI coding agents like Claude Code and Cursor. All of the original framework generators are kept.
 
-# Figma to Code
-
-<p align="center">
-<a href="https://github.com/bernaferrari/FigmaToCode/actions/"><img src="https://github.com/bernaferrari/FigmaToCode/workflows/CI/badge.svg"/></a>
-<a href="https://codecov.io/gh/bernaferrari/FigmaToCode"><img src="https://codecov.io/gh/bernaferrari/FigmaToCode/branch/master/graph/badge.svg" /></a>
-<a href="http://twitter.com/bernaferrari">
-<img src="https://img.shields.io/badge/Twitter-@bernaferrari-brightgreen.svg?style=flat" alt="Twitter"/></a>
-</p><p align="center">
-<a href="https://www.figma.com/community/plugin/842128343887142055"><img src="assets/badge.png" height="60"/></a>
-</p>
-
-Converting Figma designs into usable code can be a challenge, often requiring time-consuming manual work. Figma to Code simplifies that process. This plugin generates responsive layouts in `HTML`, `React (JSX)`, `Svelte`, `styled-components`, `Tailwind`, `Flutter`, and `SwiftUI` directly from your designs. Your feedback and ideas are always welcome.
+FigmaToSpec generates responsive layouts in `HTML`, `React (JSX)`, `Svelte`, `styled-components`, `Tailwind`, `Flutter`, and `SwiftUI` — plus an `LLM` spec mode — directly from your designs. Built on the excellent original by Bernardo Ferrari.
 
 ![Gif showing the conversion](assets/lossy_gif.gif)
 
