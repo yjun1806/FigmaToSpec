@@ -713,7 +713,7 @@ export const SPEC_VERSION = "v1";
 
 export const buildSpecGuide = (): string =>
   [
-    `# Figma → Code Spec (${SPEC_VERSION})`,
+    `# FigmaToSpec — Spec Guide (${SPEC_VERSION})`,
     "",
     "How to use: register this guide ONCE in your project's agent memory (AGENTS.md / CLAUDE.md /",
     "memory) so it is loaded before any Figma → code work. It is identical for every component, so",
@@ -784,7 +784,7 @@ const buildSpecBody = async (ctx: Ctx, roots: any[]): Promise<string> => {
 
   return [
     `## Component Spec`,
-    `> Build this per the **Figma → Code Spec (${SPEC_VERSION})** registered in your AGENTS.md / CLAUDE.md / memory.`,
+    `> Build this per the **FigmaToSpec Spec Guide (${SPEC_VERSION})** registered in your AGENTS.md / CLAUDE.md / memory.`,
     `> If that guide is not in context, load it first — this block relies on its notation and build rules.`,
     ``,
     `## Canvas`,
