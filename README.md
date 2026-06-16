@@ -1,120 +1,118 @@
 # FigmaToSpec
 
-> A fork of [bernaferrari/FigmaToCode](https://github.com/bernaferrari/FigmaToCode) that adds an **LLM export mode**: it turns a Figma selection into a token-optimized, framework-agnostic spec — a reusable **Spec Guide** plus a per-component body — for AI coding agents like Claude Code and Cursor. All of the original framework generators are kept.
+> [bernaferrari/FigmaToCode](https://github.com/bernaferrari/FigmaToCode)에서 갈라져 나온 fork입니다.
+> 원본의 다중 프레임워크 코드 생성기는 모두 걷어내고, **LLM 스펙 추출 기능만** 남겼습니다.
 
-FigmaToSpec generates responsive layouts in `HTML`, `React (JSX)`, `Svelte`, `styled-components`, `Tailwind`, `Flutter`, and `SwiftUI` — plus an `LLM` spec mode — directly from your designs. Built on the excellent original by Bernardo Ferrari.
+피그마 디자인(또는 선택한 컴포넌트)을 **토큰 최적화된, 프레임워크 중립 스펙**으로 변환합니다.
+최종 코드를 직접 만들지 않고, **AI 코딩 에이전트(Claude Code, Cursor 등)가 구현할 스펙**을 출력하는 게 목적입니다.
+그 스펙만 주고 "구현해줘" 하면 화면 그대로 동작하면서 재사용성 높은 코드가 나오도록 설계했습니다.
 
-![Gif showing the conversion](assets/lossy_gif.gif)
+## 출력물 — 2개의 블록
 
-## How it works
+| 블록 | 성격 | 내용 |
+|---|---|---|
+| **Component Spec** | 매번 다름 (이 화면) | 선택한 화면의 레이아웃·타이포·색상 토큰·시맨틱 역할 트리 |
+| **Spec Guide** | 항상 동일 (공통) | 표기법 + 빌드 규칙. 버전 박힘(`v1`) |
 
-The plugin uses a sophisticated multi-step process to transform your Figma designs into clean, optimized code:
+- **Component Spec**: `## Canvas / ## Styles / ## Strings / ## Tree` 구조. 반복 컴포넌트는 `(C1)`로 한 번만 정의하도록 디듑되고, 디자인 토큰은 `var(--token, #hex)`로, 시맨틱 역할은 `role:button` 식으로 표기됩니다.
+- **Spec Guide**: `role:` / `flex` / `var(--)` / `clip` 같은 표기 해석법과 "재사용 컴포넌트로 만들어라" 같은 빌드 규칙. **모든 컴포넌트에 공통**이라, 캐시하거나 한 번만 제공하면 됩니다.
 
-1. **Node Conversion**: First, the plugin converts Figma's native nodes into JSON representations, preserving all necessary properties while adding optimizations and parent references.
+## 사용 흐름
 
-2. **Intermediate Representation**: The JSON nodes are then transformed into `AltNodes` - a custom virtual representation that can be manipulated without affecting your original design.
+1. **최초 1회** — `Spec Guide` 블록을 복사해 프로젝트의 `AGENTS.md`(또는 `CLAUDE.md` / memory)에 등록합니다. 작업 전 에이전트가 항상 읽도록.
+2. **작업할 때마다** — 화면을 선택하고 `Component Spec` 블록만 복사해 에이전트에 전달합니다. 머리말이 "등록된 Spec Guide(v1) 참고해 구현하라"고 지시합니다.
+3. (선택) 프로젝트 고유 컨벤션 — 디자인시스템 토큰명·컴포넌트 라이브러리·폴더 구조 — 을 `AGENTS.md`에 함께 적어두면 코드베이스 일관성이 올라갑니다.
 
-3. **Layout Optimization**: The plugin analyzes and optimizes layouts, detecting patterns like auto-layouts, responsive constraints and color variables.
+> Component Spec 단독은 Spec Guide 없이는 표기를 못 읽습니다. 둘이 항상 같은 컨텍스트에 있어야 합니다.
 
-4. **Code Generation**: Finally, the optimized structure is transformed into the target framework's code, with special handling for each framework's unique patterns and best practices. If a feature is unsupported, the plugin will provide a warning.
+---
 
-![Conversion Workflow](assets/workflow.png)
+## 로컬에서 빌드해 Figma에 추가하기
 
-This intermediate representation approach allows for sophisticated transformations and optimizations before any code is generated, resulting in cleaner, more maintainable output.
+아직 Figma 커뮤니티에 배포하지 않으므로, **로컬에서 빌드한 결과물을 개발용 플러그인으로 직접 불러옵니다.**
 
-## Hard cases
+### 1. 사전 준비
 
-Converting visual designs to code inevitably encounters complex edge cases. Here are some challenges the plugin handles:
+- [Node.js](https://nodejs.org/) (LTS 권장)
+- [pnpm](https://pnpm.io/installation) — 이 저장소의 패키지 매니저 (`pnpm-lock.yaml`)
+- **Figma 데스크톱 앱** — 개발용 플러그인 등록은 웹이 아니라 데스크톱 앱에서만 됩니다.
 
-1. **Complex Layouts**: When working with mixed positioning (absolute + auto-layout), the plugin has to make intelligent decisions about how to structure the resulting code. It detects parent-child relationships and z-index ordering to produce the most accurate representation.
+### 2. 빌드
 
-2. **Color Variables**: The plugin detects and processes color variables, allowing for theme-consistent output.
+```bash
+git clone https://github.com/yjun1806/FigmaToSpec.git
+cd FigmaToSpec
+pnpm install
+pnpm build
+```
 
-3. **Gradients and Effects**: Different frameworks handle gradients and effects in unique ways, requiring specialized conversion logic.
+빌드 산출물이 다음 위치에 생성됩니다 (`manifest.json`이 이걸 가리킵니다):
 
-![Conversion Workflow](assets/examples.png)
+- `apps/plugin/dist/code.js` — 플러그인 로직
+- `apps/plugin/dist/index.html` — 플러그인 UI
 
-**Tip**: Instead of selecting the whole page, you can also select individual items. This can be useful for both debugging and componentization. For example: you can use the plugin to generate the code of a single element and then replicate it using a for-loop.
+> `manifest.json`은 저장소 **루트**에 있습니다. Figma에는 이 파일을 등록합니다.
 
-### Todo
+### 3. Figma에 개발 플러그인으로 등록
 
-- Vectors (possible to enable in HTML and Tailwind)
-- Images (possible to enable to inline them in HTML and Tailwind)
-- Line/Star/Polygon
+1. Figma 데스크톱 앱을 엽니다.
+2. 메뉴 → **Plugins → Development → Import plugin from manifest…**
+3. 이 저장소 루트의 **`manifest.json`** 을 선택합니다.
+4. 끝. 이제 개발 플러그인 목록에 **FigmaToSpec** 이 보입니다.
 
-## How to build the project
+> 코드를 다시 빌드(`pnpm build`)하면 산출물이 갱신됩니다. Figma에서 플러그인을 다시 실행하면 최신 빌드가 반영됩니다.
 
-### Package Manager
+### 4. 사용
 
-The project is configured for [pnpm](https://pnpm.io/). To install, see the [installation notes for pnpm](https://pnpm.io/installation).
+FigmaToSpec은 **두 가지 모드**로 동작합니다.
 
-### Monorepo
+- **Dev Mode (codegen 패널)** — Figma를 Dev Mode로 전환하고 노드를 선택하면, 코드 패널 언어 목록에 **LLM**이 보입니다. 선택하면 **Component Spec** / **Spec Guide** 두 블록이 나옵니다.
+- **에디터 모드 (플러그인 UI)** — Plugins → Development → **FigmaToSpec** 실행. 화면을 선택하면 같은 두 블록을 UI에서 복사할 수 있습니다.
 
-The plugin is organized as a monorepo. There are several packages:
+---
 
-- `packages/backend` - Contains the business logic that reads the Figma API and converts nodes
-- `packages/plugin-ui` - Contains the common UI for the plugin
-- `packages/eslint-config-custom` - Config file for ESLint
-- `packages/tsconfig` - Collection of TSConfig files used throughout the project
+## 개발
 
-- `apps/plugin` - This is the actual plugin assembled from the parts in `backend` & `plugin-ui`. Within this folder it's divided between:
-  - `plugin-src` - loads from `backend` and compiles to `code.js`
-  - `ui-src` - loads the common `plugin-ui` and compiles to `index.html`
-- `apps/debug` - This is a debug mode plugin that is a more convenient way to see all the UI elements.
+### 워치 모드
 
-### Development Workflow
+코드를 고치면서 작업할 땐 watch 모드를 쓰면 저장할 때마다 자동 빌드됩니다.
 
-The project uses [Turborepo](https://turborepo.com/) for managing the monorepo, and each package is compiled using [esbuild](https://esbuild.github.io/) for fast development cycles. Only modified files are recompiled when changes are made, making the development process more efficient.
+```bash
+# 루트에서 (debug UI 포함, http://localhost:3000)
+pnpm dev
 
-#### Running the Project
+# 또는 플러그인만
+cd apps/plugin && pnpm dev
+```
 
-You have two main options for development:
+Figma에서 플러그인을 다시 실행하면 변경분이 반영됩니다.
 
-1. **Root development mode** (includes debug UI):
-
-   ```bash
-   pnpm dev
-   ```
-
-   This runs the plugin in dev mode and also starts a Next.js server for the debug UI. You can access the debug UI at `http://localhost:3000`.
-
-2. **Plugin-only development mode**:
-
-   ```bash
-   cd apps/plugin
-   pnpm dev
-   ```
-
-   This focuses only on the plugin without the Next.js debug UI. Use this when you're making changes specifically to the plugin.
-
-#### Where to Make Changes
-
-Most of your development work will happen in these directories:
-
-- `packages/backend` - For plugin backend
-- `packages/plugin-ui` - For plugin UI
-- `apps/plugin/` - The main plugin result that combines the backend and UI and is called by Figma.
-
-You'll rarely need to modify files directly in the `apps/` directory, as they mostly contain build configuration.
-
-#### Commands
+### 명령어
 
 `pnpm run ...`
 
-- `dev` - runs the app in dev mode. This can be run in the Figma editor.
-- `build` - builds the project for production
-- `build:watch` - builds and watches for changes
-- `lint` - runs ESLint
-- `format` - formats with prettier (warning: may edit files!)
+- `dev` — 개발(워치) 모드. Figma 에디터에서 실행 가능
+- `build` — 프로덕션 빌드
+- `build:watch` — 빌드 + 변경 감지
+- `lint` — ESLint
+- `format` — prettier (주의: 파일을 수정함)
 
-#### Debug mode
+### 모노레포 구조
 
-When running the `dev` task, you can open `http://localhost:3000` to see the debug version of the UI.
+[Turborepo](https://turborepo.com/) + [esbuild](https://esbuild.github.io/) 기반입니다.
 
-<img width="600" alt="Screenshot 2024-12-13 at 16 26 43" src="https://github.com/user-attachments/assets/427fb066-70e1-47bd-8718-51f7f4d83e35" />
+- `packages/backend` — Figma API를 읽어 노드를 변환하고 **LLM 스펙을 생성**하는 핵심 로직 (`src/llm/`, `src/altNodes/jsonNodeConversion.ts`)
+- `packages/plugin-ui` — 플러그인 공통 UI
+- `apps/plugin` — `backend` + `plugin-ui`를 합쳐 Figma가 부르는 실제 플러그인
+  - `plugin-src` → `dist/code.js`
+  - `ui-src` → `dist/index.html`
+- `apps/debug` — UI를 브라우저에서 보는 디버그 앱 (`pnpm dev` 시 `http://localhost:3000`)
 
-## Issues
+> 참고: 원본의 HTML/Tailwind/Flutter/SwiftUI/Compose 생성기는 모두 제거됐습니다. 색상·그라데이션 헬퍼(`html/builderImpl/htmlColor`) 등 LLM 스펙 생성에 필요한 최소 의존만 남아 있습니다.
 
-The Figma file for this README and icon is also open and welcome to changes! [Check it here.](https://www.figma.com/file/8buWpm6Mpq4yK9MhbkcdJB/Figma-to-Code)
+---
 
-I took decisions thinking about how it would benefit the majority of people, but I can (and probably will!) be wrong many times. Found a bug? Have an idea for an improvement? Feel free to [add an issue](../../issues) or email me. Pull requests are also more than welcome.
+## 라이선스 / 크레딧
+
+- 이 프로젝트는 [bernaferrari/FigmaToCode](https://github.com/bernaferrari/FigmaToCode)의 fork이며, 원본의 노드 변환 파이프라인·플러그인 셸 위에서 동작합니다. 원작자 **Bernardo Ferrari**에게 감사드립니다.
+- 라이선스는 원본과 동일한 **GPL-3.0** 입니다 (`LICENSE` 참조).
