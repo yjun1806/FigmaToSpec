@@ -4,10 +4,9 @@ import {
   PluginSettings,
   SelectPreferenceOptions,
 } from "types";
-import { useMemo, useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { coldarkDark as theme } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useMemo } from "react";
 import { CopyButton } from "./CopyButton";
+import CodeBlock from "./CodeBlock";
 import EmptyState from "./EmptyState";
 import SettingsGroup from "./SettingsGroup";
 import FrameworkTabs from "./FrameworkTabs";
@@ -25,10 +24,40 @@ interface CodePanelProps {
   ) => void;
 }
 
+// Prism language for each framework's output.
+const languageFor = (
+  framework: Framework,
+  settings: PluginSettings | null,
+): string => {
+  if (framework === "HTML" && settings?.htmlGenerationMode === "styled-components")
+    return "jsx";
+  switch (framework) {
+    case "Flutter":
+      return "dart";
+    case "SwiftUI":
+      return "swift";
+    case "Compose":
+      return "kotlin";
+    case "LLM":
+      return "markdown";
+    case "LLM+Tailwind":
+      return "jsx";
+    default:
+      return "html";
+  }
+};
+
+// The LLM spec is `guide + "\n\n" + body`, where the per-component body always starts with the
+// `## Component` heading. Split there so the static guide and the component payload render as two
+// separate, independently-copyable blocks. The guide never contains that heading at line start,
+// so anchoring on the blank-line-prefixed heading is unambiguous.
+const splitLLMSpec = (full: string): { guide: string; body: string } => {
+  const idx = full.indexOf("\n\n## Component");
+  if (idx === -1) return { guide: full, body: "" };
+  return { guide: full.slice(0, idx), body: full.slice(idx + 2) };
+};
+
 const CodePanel = (props: CodePanelProps) => {
-  const [syntaxHovered, setSyntaxHovered] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const initialLinesToShow = 25;
   const {
     code,
     preferenceOptions,
@@ -52,7 +81,7 @@ const CodePanel = (props: CodePanelProps) => {
 
     return codeString.replace(
       /(class(?:Name)?)="([^"]*)"/g,
-      (match, attr, classes) => {
+      (_match, attr, classes) => {
         const prefixedClasses = classes
           .split(/\s+/)
           .filter(Boolean)
@@ -63,15 +92,6 @@ const CodePanel = (props: CodePanelProps) => {
     );
   };
 
-  // Function to truncate code to a specific number of lines
-  const truncateCode = (codeString: string, lines: number) => {
-    const codeLines = codeString.split("\n");
-    if (codeLines.length <= lines) {
-      return codeString;
-    }
-    return codeLines.slice(0, lines).join("\n") + "\n...";
-  };
-
   // If the selected framework is Tailwind and a prefix is provided then transform the code.
   const prefixedCode =
     selectedFramework === "Tailwind" &&
@@ -79,22 +99,10 @@ const CodePanel = (props: CodePanelProps) => {
       ? applyPrefixToClasses(code, settings?.customTailwindPrefix)
       : code;
 
-  // Memoize the line count calculation to improve performance for large code blocks
-  const lineCount = useMemo(
-    () => prefixedCode.split("\n").length,
-    [prefixedCode],
-  );
+  const language = languageFor(selectedFramework, settings);
 
-  // Determine if code should be truncated
-  const shouldTruncate = !isExpanded && lineCount > initialLinesToShow;
-  const displayedCode = shouldTruncate
-    ? truncateCode(prefixedCode, initialLinesToShow)
-    : prefixedCode;
-  const showMoreButton = lineCount > initialLinesToShow;
-  const showCodeCopyButton = lineCount > 5;
-
-  const handleButtonHover = () => setSyntaxHovered(true);
-  const handleButtonLeave = () => setSyntaxHovered(false);
+  // For LLM, show the shared guide and the per-component body as two separate blocks.
+  const llmParts = selectedFramework === "LLM" ? splitLLMSpec(prefixedCode) : null;
 
   // Memoized preference groups for better performance
   const {
@@ -143,11 +151,7 @@ const CodePanel = (props: CodePanelProps) => {
           Code
         </p>
         {!isCodeEmpty && (
-          <CopyButton
-            value={prefixedCode}
-            onMouseEnter={handleButtonHover}
-            onMouseLeave={handleButtonLeave}
-          />
+          <CopyButton value={prefixedCode} />
         )}
       </div>
 
@@ -210,68 +214,26 @@ const CodePanel = (props: CodePanelProps) => {
         </div>
       )}
 
-      <div
-        className={`relative rounded-lg ring-green-600 transition-all duration-200 ${
-          syntaxHovered ? "ring-2" : "ring-0"
-        }`}
-      >
-        {isCodeEmpty ? (
-          <EmptyState />
-        ) : (
-          <>
-            {showCodeCopyButton && (
-              <div className="pointer-events-none sticky top-3 z-10 h-0">
-                <CopyButton
-                  value={prefixedCode}
-                  showLabel={false}
-                  onMouseEnter={handleButtonHover}
-                  onMouseLeave={handleButtonLeave}
-                  className="pointer-events-auto absolute right-2 top-2 h-7 w-7 rounded-md bg-neutral-800/90 p-0 text-neutral-200 shadow-sm ring-1 ring-white/10 backdrop-blur-sm hover:bg-neutral-600 hover:text-white hover:ring-white/20 dark:bg-neutral-800/90 dark:hover:bg-neutral-600"
-                />
-              </div>
-            )}
-            <SyntaxHighlighter
-              language={
-                selectedFramework === "HTML" &&
-                settings?.htmlGenerationMode === "styled-components"
-                  ? "jsx"
-                  : selectedFramework === "Flutter"
-                    ? "dart"
-                    : selectedFramework === "SwiftUI"
-                      ? "swift"
-                      : selectedFramework === "Compose"
-                        ? "kotlin"
-                        : "html"
-              }
-              style={theme}
-              customStyle={{
-                fontSize: 12,
-                borderRadius: 8,
-                marginTop: 0,
-                marginBottom: 0,
-                backgroundColor: syntaxHovered ? "#1E2B1A" : "#1B1B1B",
-                transitionProperty: "all",
-                transitionTimingFunction: "ease",
-                transitionDuration: "0.2s",
-              }}
-            >
-              {displayedCode}
-            </SyntaxHighlighter>
-            {showMoreButton && (
-              <div className="flex justify-center dark:bg-[#1B1B1B] border-t dark:border-gray-700">
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-xs w-full flex justify-center py-3 text-blue-500 hover:text-blue-400 transition-colors"
-                  aria-label="Show more code. This could be slow or freeze Figma for a few seconds."
-                  title="Show more code. This could be slow or freeze Figma for a few seconds."
-                >
-                  {isExpanded ? "Show Less" : "Show More"}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      {isCodeEmpty ? (
+        <EmptyState />
+      ) : llmParts ? (
+        <div className="flex flex-col gap-3">
+          <CodeBlock
+            code={llmParts.guide}
+            language={language}
+            label="Spec Guide · 공통 (캐시/재사용)"
+          />
+          {llmParts.body && (
+            <CodeBlock
+              code={llmParts.body}
+              language={language}
+              label="Component · 이 화면"
+            />
+          )}
+        </div>
+      ) : (
+        <CodeBlock code={prefixedCode} language={language} />
+      )}
     </div>
   );
 };

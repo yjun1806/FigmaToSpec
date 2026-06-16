@@ -29,3 +29,6 @@ test/**/next-env.d.ts
 
 build
 .turbo
+
+# agent tooling (oh-my-claudecode) session state
+.omc/

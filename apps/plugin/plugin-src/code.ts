@@ -6,6 +6,8 @@ import {
   swiftuiMain,
   htmlMain,
   composeMain,
+  llmSpecParts,
+  llmTailwindMain,
   postSettingsChanged,
 } from "backend";
 import { nodesToJSON } from "backend/src/altNodes/jsonNodeConversion";
@@ -412,6 +414,26 @@ const codegenMode = async () => {
               title: "Text Styles",
               code: swiftUICodeGenTextStyles(),
               language: "SWIFT",
+            },
+          ];
+        case "llm": {
+          // Split the spec into the static, reusable guide and the per-component body so each
+          // renders as its own block (like styled-components' Code / Text Styles).
+          const { guide, body } = await llmSpecParts(
+            convertedSelection,
+            userPluginSettings,
+          );
+          return [
+            { title: "Spec Guide", code: guide, language: "PLAINTEXT" },
+            { title: "Component", code: body, language: "PLAINTEXT" },
+          ];
+        }
+        case "llm_tailwind_jsx":
+          return [
+            {
+              title: "LLM Spec + Tailwind (JSX)",
+              code: await llmTailwindMain(convertedSelection, userPluginSettings),
+              language: "TYPESCRIPT",
             },
           ];
         // case "compose":

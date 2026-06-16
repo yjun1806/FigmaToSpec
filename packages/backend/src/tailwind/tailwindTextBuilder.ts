@@ -20,6 +20,8 @@ export class TailwindTextBuilder extends TailwindDefaultBuilder {
     style: string;
     text: string;
     openTypeFeatures: { [key: string]: boolean };
+    colorTokenName?: string;
+    textStyleName?: string;
   }[] {
     const segments = (node as any)
       .styledTextSegments as StyledTextSegmentSubset[];
@@ -70,6 +72,8 @@ export class TailwindTextBuilder extends TailwindDefaultBuilder {
         style: styleClasses,
         text: charsWithLineBreak,
         openTypeFeatures: segment.openTypeFeatures,
+        colorTokenName: (segment as any).colorTokenName ?? "",
+        textStyleName: (segment as any).textStyleName ?? "",
       };
     });
   }

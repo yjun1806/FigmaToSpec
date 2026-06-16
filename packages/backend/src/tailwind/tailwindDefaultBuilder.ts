@@ -165,6 +165,20 @@ export class TailwindDefaultBuilder {
    */
   customColor(paint: ReadonlyArray<Paint>, kind: TailwindColorType): this {
     if (this.visible) {
+      // Expose the bound design token name as a data attribute, e.g.
+      // data-bg-color-token / data-border-color-token (resolved during conversion).
+      if (kind === "bg") {
+        const bgToken = (this.node as any).bgColorTokenName;
+        if (bgToken) {
+          this.addData("bg-color-token", bgToken);
+        }
+      } else if (kind === "border" || kind === "outline") {
+        const borderToken = (this.node as any).borderColorTokenName;
+        if (borderToken) {
+          this.addData("border-color-token", borderToken);
+        }
+      }
+
       let gradient = "";
       if (kind === "bg") {
         gradient = tailwindGradientFromFills(paint);

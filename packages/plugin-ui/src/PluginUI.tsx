@@ -42,7 +42,14 @@ type PluginUIProps = {
   isLoading: boolean;
 };
 
-const frameworks: Framework[] = ["HTML", "Tailwind", "Flutter", "SwiftUI"];
+const frameworks: Framework[] = [
+  "HTML",
+  "Tailwind",
+  "Flutter",
+  "SwiftUI",
+  "LLM",
+  "LLM+Tailwind",
+];
 const LOADING_INDICATOR_DELAY_MS = 250;
 
 type FrameworkTabsProps = {

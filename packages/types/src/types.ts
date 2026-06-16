@@ -1,6 +1,13 @@
 import "@figma/plugin-typings";
 // Settings
-export type Framework = "Flutter" | "SwiftUI" | "HTML" | "Tailwind" | "Compose";
+export type Framework =
+  | "Flutter"
+  | "SwiftUI"
+  | "HTML"
+  | "Tailwind"
+  | "Compose"
+  | "LLM"
+  | "LLM+Tailwind";
 export interface HTMLSettings {
   showLayerNames: boolean;
   embedImages: boolean;

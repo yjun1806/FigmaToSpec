@@ -141,6 +141,15 @@ export const tailwindText = (
     const segment = styledHtml[0];
     layoutBuilder.addAttributes(segment.style);
 
+    // Expose the Figma token names as data attributes (e.g.
+    // data-text-color-token="semantic/label/alternative", data-text-token="label 1/regular").
+    if (segment.colorTokenName) {
+      layoutBuilder.addData("text-color-token", segment.colorTokenName);
+    }
+    if (segment.textStyleName) {
+      layoutBuilder.addData("text-token", segment.textStyleName);
+    }
+
     const getFeatureTag = (features: Record<string, boolean>): string => {
       if (features.SUBS === true) return "sub";
       if (features.SUPS === true) return "sup";
@@ -161,7 +170,16 @@ export const tailwindText = (
               ? "sup"
               : "span";
 
-        return `<${tag} class="${style.style}">${style.text}</${tag}>`;
+        const dataAttrs = [
+          style.colorTokenName
+            ? ` data-text-color-token="${style.colorTokenName}"`
+            : "",
+          style.textStyleName
+            ? ` data-text-token="${style.textStyleName}"`
+            : "",
+        ].join("");
+
+        return `<${tag} class="${style.style}"${dataAttrs}>${style.text}</${tag}>`;
       })
       .join("");
   }

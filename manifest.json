@@ -19,6 +19,8 @@
     { "label": "Tailwind", "value": "tailwind" },
     { "label": "Tailwind (JSX)", "value": "tailwind_jsx" },
     { "label": "Flutter", "value": "flutter" },
-    { "label": "SwiftUI", "value": "swiftUI" }
+    { "label": "SwiftUI", "value": "swiftUI" },
+    { "label": "LLM", "value": "llm" },
+    { "label": "LLM + Tailwind (JSX)", "value": "llm_tailwind_jsx" }
   ]
 }

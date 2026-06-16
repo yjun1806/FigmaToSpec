@@ -65,6 +65,51 @@ export const getVariableNameFromColor = (
 };
 
 /**
+ * Resolves the design-token name bound to a set of paints (or a paint style id).
+ * Prefers a bound color *variable* (e.g. "semantic/label/alternative") and falls
+ * back to a paint *style*. Returns undefined when the color is a plain literal
+ * with no token attached. Paints/ids come from the plugin API, so they are only
+ * references that must be resolved to their names asynchronously.
+ */
+const resolveColorTokenName = async (
+  paints: any,
+  styleId: any,
+): Promise<string | undefined> => {
+  if (Array.isArray(paints)) {
+    const colorAlias = paints.find(
+      (paint) => paint?.boundVariables?.color?.id,
+    )?.boundVariables?.color;
+    if (colorAlias?.id) {
+      try {
+        const colorVariable = await figma.variables.getVariableByIdAsync(
+          colorAlias.id,
+        );
+        console.log("[FtC-token] getVariableByIdAsync", {
+          id: colorAlias.id,
+          name: colorVariable?.name,
+        });
+        if (colorVariable?.name) return colorVariable.name;
+      } catch (e) {
+        console.log("[FtC-token] getVariableByIdAsync threw", colorAlias.id, e);
+      }
+    }
+  }
+  if (styleId && styleId !== figma.mixed) {
+    try {
+      const paintStyle = await figma.getStyleByIdAsync(styleId);
+      console.log("[FtC-token] getStyleByIdAsync(paint)", {
+        id: styleId,
+        name: paintStyle?.name,
+      });
+      if (paintStyle?.name) return paintStyle.name;
+    } catch (e) {
+      console.log("[FtC-token] getStyleByIdAsync(paint) threw", styleId, e);
+    }
+  }
+  return undefined;
+};
+
+/**
  * Collects all color variables used in a node and its descendants
  */
 const collectNodeColorVariables = async (
@@ -428,6 +473,41 @@ const processNodePair = async (
             );
           }
 
+          // Resolve the text color token (color variable or paint style),
+          // e.g. "semantic/label/alternative".
+          const textColorToken = await resolveColorTokenName(
+            segment.fills,
+            (segment as any).fillStyleId,
+          );
+          if (textColorToken) {
+            mutableSegment.colorTokenName = textColorToken;
+          }
+
+          // Resolve the applied text style name (e.g. "label 1/regular").
+          const textStyleId = (segment as any).textStyleId;
+          if (textStyleId && textStyleId !== figma.mixed) {
+            try {
+              const textStyle = await figma.getStyleByIdAsync(textStyleId);
+              if (textStyle?.name) {
+                mutableSegment.textStyleName = textStyle.name;
+              }
+            } catch (e) {
+              console.log("[FtC-token] getStyleByIdAsync(textStyleId) threw", e);
+            }
+          }
+
+          // ---- TEMP DEBUG ----
+          console.log("[FtC-token] segment debug", {
+            node: jsonNode.name,
+            textStyleId,
+            textStyleIdIsMixed: textStyleId === figma.mixed,
+            fillStyleId: (segment as any).fillStyleId,
+            fills: JSON.stringify(segment.fills),
+            resolvedColorToken: textColorToken,
+            resolvedTextStyle: mutableSegment.textStyleName,
+          });
+          // ---- END TEMP DEBUG ----
+
           // For single segments, don't add index suffix
           if (styledTextSegments.length === 1) {
             (mutableSegment as any).uniqueId = `${baseSegmentName}_span`;
@@ -447,6 +527,25 @@ const processNodePair = async (
     Object.assign(jsonNode, jsonNode.style);
     if (!jsonNode.textAutoResize) {
       jsonNode.textAutoResize = "NONE";
+    }
+  }
+
+  // Resolve container color tokens (background fill + border/stroke) so they can
+  // be surfaced as data attributes, mirroring the text color/style handling.
+  if (figmaNode.type !== "TEXT") {
+    const bgColorToken = await resolveColorTokenName(
+      (figmaNode as any).fills,
+      (figmaNode as any).fillStyleId,
+    );
+    if (bgColorToken) {
+      (jsonNode as any).bgColorTokenName = bgColorToken;
+    }
+    const borderColorToken = await resolveColorTokenName(
+      (figmaNode as any).strokes,
+      (figmaNode as any).strokeStyleId,
+    );
+    if (borderColorToken) {
+      (jsonNode as any).borderColorTokenName = borderColorToken;
     }
   }
 
@@ -481,7 +580,11 @@ const processNodePair = async (
   }
 
   // Add canBeFlattened property
-  if (settings.embedVectors && !parentNode?.canBeFlattened) {
+  // LLM mode always flattens icons to SVG so the spec can embed the original source.
+  if (
+    (settings.embedVectors || settings.framework === "LLM") &&
+    !parentNode?.canBeFlattened
+  ) {
     const isIcon = isLikelyIcon(jsonNode as any);
     (jsonNode as any).canBeFlattened = isIcon;
 
