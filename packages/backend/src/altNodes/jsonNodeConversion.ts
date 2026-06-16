@@ -1,6 +1,6 @@
 import { addWarning } from "../common/commonConversionWarnings";
 import { PluginSettings } from "types";
-import { variableToColorName } from "../tailwind/conversionTables";
+import { variableToColorName } from "../common/variableColorName";
 import { HasGeometryTrait, Node, Paint } from "../api_types";
 import { calculateRectangleFromBoundingBox } from "../common/commonPosition";
 import { isLikelyIcon } from "./iconDetection";

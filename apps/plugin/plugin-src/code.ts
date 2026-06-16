@@ -1,27 +1,11 @@
-import { tailwindCodeGenTextStyles } from "./../../../packages/backend/src/tailwind/tailwindMain";
-import {
-  run,
-  flutterMain,
-  tailwindMain,
-  swiftuiMain,
-  htmlMain,
-  composeMain,
-  llmSpecParts,
-  llmTailwindMain,
-  postSettingsChanged,
-} from "backend";
+import { run, llmSpecParts, postSettingsChanged } from "backend";
 import { nodesToJSON } from "backend/src/altNodes/jsonNodeConversion";
-import { retrieveGenericSolidUIColors } from "backend/src/common/retrieveUI/retrieveColors";
-import { flutterCodeGenTextStyles } from "backend/src/flutter/flutterMain";
-import { htmlCodeGenTextStyles } from "backend/src/html/htmlMain";
-import { swiftUICodeGenTextStyles } from "backend/src/swiftui/swiftuiMain";
-import { composeCodeGenTextStyles } from "backend/src/compose/composeMain";
 import { PluginSettings, SettingWillChangeMessage } from "types";
 
 let userPluginSettings: PluginSettings;
 
 export const defaultPluginSettings: PluginSettings = {
-  framework: "HTML",
+  framework: "LLM",
   showLayerNames: false,
   useOldPluginVersion2025: false,
   responsiveRoot: false,
@@ -262,202 +246,16 @@ const codegenMode = async () => {
         convertedSelection.length,
       );
 
-      switch (language) {
-        case "html":
-          return [
-            {
-              title: "Code",
-              code: (
-                await htmlMain(
-                  convertedSelection,
-                  { ...userPluginSettings, htmlGenerationMode: "html" },
-                  true,
-                )
-              ).html,
-              language: "HTML",
-            },
-            {
-              title: "Text Styles",
-              code: htmlCodeGenTextStyles(userPluginSettings),
-              language: "HTML",
-            },
-          ];
-        case "html_jsx":
-          return [
-            {
-              title: "Code",
-              code: (
-                await htmlMain(
-                  convertedSelection,
-                  { ...userPluginSettings, htmlGenerationMode: "jsx" },
-                  true,
-                )
-              ).html,
-              language: "HTML",
-            },
-            {
-              title: "Text Styles",
-              code: htmlCodeGenTextStyles(userPluginSettings),
-              language: "HTML",
-            },
-          ];
-
-        case "html_svelte":
-          return [
-            {
-              title: "Code",
-              code: (
-                await htmlMain(
-                  convertedSelection,
-                  { ...userPluginSettings, htmlGenerationMode: "svelte" },
-                  true,
-                )
-              ).html,
-              language: "HTML",
-            },
-            {
-              title: "Text Styles",
-              code: htmlCodeGenTextStyles(userPluginSettings),
-              language: "HTML",
-            },
-          ];
-
-        case "html_styled_components":
-          return [
-            {
-              title: "Code",
-              code: (
-                await htmlMain(
-                  convertedSelection,
-                  {
-                    ...userPluginSettings,
-                    htmlGenerationMode: "styled-components",
-                  },
-                  true,
-                )
-              ).html,
-              language: "HTML",
-            },
-            {
-              title: "Text Styles",
-              code: htmlCodeGenTextStyles(userPluginSettings),
-              language: "HTML",
-            },
-          ];
-
-        case "tailwind":
-        case "tailwind_jsx":
-          return [
-            {
-              title: "Code",
-              code: await tailwindMain(convertedSelection, {
-                ...userPluginSettings,
-                tailwindGenerationMode:
-                  language === "tailwind_jsx" ? "jsx" : "html",
-              }),
-              language: "HTML",
-            },
-            // {
-            //   title: "Style",
-            //   code: tailwindMain(convertedSelection, defaultPluginSettings),
-            //   language: "HTML",
-            // },
-            {
-              title: "Tailwind Colors",
-              code: (await retrieveGenericSolidUIColors("Tailwind"))
-                .map((d) => {
-                  let str = `${d.hex};`;
-                  if (d.colorName !== d.hex) {
-                    str += ` // ${d.colorName}`;
-                  }
-                  if (d.meta) {
-                    str += ` (${d.meta})`;
-                  }
-                  return str;
-                })
-                .join("\n"),
-              language: "JAVASCRIPT",
-            },
-            {
-              title: "Text Styles",
-              code: tailwindCodeGenTextStyles(),
-              language: "HTML",
-            },
-          ];
-        case "flutter":
-          return [
-            {
-              title: "Code",
-              code: flutterMain(convertedSelection, {
-                ...userPluginSettings,
-                flutterGenerationMode: "snippet",
-              }),
-              language: "SWIFT",
-            },
-            {
-              title: "Text Styles",
-              code: flutterCodeGenTextStyles(),
-              language: "SWIFT",
-            },
-          ];
-        case "swiftUI":
-          return [
-            {
-              title: "SwiftUI",
-              code: swiftuiMain(convertedSelection, {
-                ...userPluginSettings,
-                swiftUIGenerationMode: "snippet",
-              }),
-              language: "SWIFT",
-            },
-            {
-              title: "Text Styles",
-              code: swiftUICodeGenTextStyles(),
-              language: "SWIFT",
-            },
-          ];
-        case "llm": {
-          // Split the spec into the static, reusable guide and the per-component body so each
-          // renders as its own block (like styled-components' Code / Text Styles).
-          const { guide, body } = await llmSpecParts(
-            convertedSelection,
-            userPluginSettings,
-          );
-          return [
-            { title: "Spec Guide", code: guide, language: "PLAINTEXT" },
-            { title: "Component", code: body, language: "PLAINTEXT" },
-          ];
-        }
-        case "llm_tailwind_jsx":
-          return [
-            {
-              title: "LLM Spec + Tailwind (JSX)",
-              code: await llmTailwindMain(convertedSelection, userPluginSettings),
-              language: "TYPESCRIPT",
-            },
-          ];
-        // case "compose":
-        //   return [
-        //     {
-        //       title: "Jetpack Compose",
-        //       code: composeMain(convertedSelection, {
-        //         ...userPluginSettings,
-        //         composeGenerationMode: "snippet",
-        //       }),
-        //       language: "KOTLIN",
-        //     },
-        //     {
-        //       title: "Text Styles",
-        //       code: composeCodeGenTextStyles(),
-        //       language: "KOTLIN",
-        //     },
-        //   ];
-        default:
-          break;
-      }
-
-      const blocks: CodegenResult[] = [];
-      return blocks;
+      // Only the LLM spec exporter ships in this build. Split the spec into the static, reusable
+      // guide and the per-component body so each renders as its own block.
+      const { guide, body } = await llmSpecParts(
+        convertedSelection,
+        userPluginSettings,
+      );
+      return [
+        { title: "Spec Guide", code: guide, language: "PLAINTEXT" },
+        { title: "Component", code: body, language: "PLAINTEXT" },
+      ];
     },
   );
 };

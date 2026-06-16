@@ -10,7 +10,6 @@ import {
 import { postConversionComplete, postEmptyMessage, postError } from "./messaging";
 import { PluginSettings } from "types";
 import { convertToCode } from "./common/retrieveUI/convertToCode";
-import { generateHTMLPreview } from "./html/htmlMain";
 import { oldConvertNodesToAltNodes } from "./altNodes/oldAltConversion";
 import {
   getNodeByIdAsyncCalls,
@@ -127,12 +126,7 @@ export const run = async (settings: PluginSettings) => {
   let gradients: Awaited<ReturnType<typeof retrieveGenericLinearGradients>> = [];
 
   if (!skipHeavyUI) {
-    const generatePreviewStart = Date.now();
-    htmlPreview = await generateHTMLPreview(convertedSelection, settings);
-    console.log(
-      `[benchmark] generateHTMLPreview: ${Date.now() - generatePreviewStart}ms`,
-    );
-
+    // HTML preview generation was removed with the HTML builder; the preview stays empty.
     const colorPanelStart = Date.now();
     colors = await retrieveGenericSolidUIColors(framework);
     gradients = await retrieveGenericLinearGradients(framework);
