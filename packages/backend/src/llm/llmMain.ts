@@ -717,12 +717,12 @@ export const buildSpecGuide = (): string =>
     "",
     "How to use: register this guide ONCE in your project's agent memory (AGENTS.md / CLAUDE.md /",
     "memory) so it is loaded before any Figma → code work. It is identical for every component, so",
-    "it only needs to be set up once; each `## Component` block you receive afterwards references it",
+    "it only needs to be set up once; each `## Component Spec` block you receive afterwards references it",
     "by version. (Already registered? Skip this.)",
     "",
     "---",
     "",
-    "Each `## Component` is a complete, framework-agnostic spec of one screen. Implement it in",
+    "Each `## Component Spec` is a complete, framework-agnostic spec of one screen. Implement it in",
     "whatever stack the user names (React, Vue, Svelte, plain HTML+CSS, SwiftUI, …). Two goals, both",
     "required: the running UI matches the screen exactly, AND the code is production-quality and",
     "reusable — not a flat dump of divs.",
@@ -783,7 +783,7 @@ const buildSpecBody = async (ctx: Ctx, roots: any[]): Promise<string> => {
   );
 
   return [
-    `## Component`,
+    `## Component Spec`,
     `> Build this per the **Figma → Code Spec (${SPEC_VERSION})** registered in your AGENTS.md / CLAUDE.md / memory.`,
     `> If that guide is not in context, load it first — this block relies on its notation and build rules.`,
     ``,

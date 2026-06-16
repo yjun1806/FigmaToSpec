@@ -253,8 +253,8 @@ const codegenMode = async () => {
         userPluginSettings,
       );
       return [
+        { title: "Component Spec", code: body, language: "PLAINTEXT" },
         { title: "Spec Guide", code: guide, language: "PLAINTEXT" },
-        { title: "Component", code: body, language: "PLAINTEXT" },
       ];
     },
   );

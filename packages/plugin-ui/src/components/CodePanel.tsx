@@ -48,11 +48,11 @@ const languageFor = (
 };
 
 // The LLM spec is `guide + "\n\n" + body`, where the per-component body always starts with the
-// `## Component` heading. Split there so the static guide and the component payload render as two
-// separate, independently-copyable blocks. The guide never contains that heading at line start,
-// so anchoring on the blank-line-prefixed heading is unambiguous.
+// `## Component Spec` heading. Split there so the static guide and the component payload render as
+// two separate, independently-copyable blocks. The guide never contains that heading at line
+// start, so anchoring on the blank-line-prefixed heading is unambiguous.
 const splitLLMSpec = (full: string): { guide: string; body: string } => {
-  const idx = full.indexOf("\n\n## Component");
+  const idx = full.indexOf("\n\n## Component Spec");
   if (idx === -1) return { guide: full, body: "" };
   return { guide: full.slice(0, idx), body: full.slice(idx + 2) };
 };
@@ -218,18 +218,18 @@ const CodePanel = (props: CodePanelProps) => {
         <EmptyState />
       ) : llmParts ? (
         <div className="flex flex-col gap-3">
+          {llmParts.body && (
+            <CodeBlock
+              code={llmParts.body}
+              language={language}
+              label="Component Spec · 이 화면"
+            />
+          )}
           <CodeBlock
             code={llmParts.guide}
             language={language}
             label="Spec Guide · 공통 (캐시/재사용)"
           />
-          {llmParts.body && (
-            <CodeBlock
-              code={llmParts.body}
-              language={language}
-              label="Component · 이 화면"
-            />
-          )}
         </div>
       ) : (
         <CodeBlock code={prefixedCode} language={language} />
